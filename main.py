@@ -127,11 +127,15 @@ async def update_user(user_id: str, user_detail: Dict[str, Any] = Body(...)):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # Endpoint to delete user by ID
+ 
 @app.delete("/delete_user/{user_id}")
 async def delete_user(user_id: str):
     try:
-        response = table.delete_item(Key={'user_id': user_id})
-        if response.get('ConsumedCapacity'):
+        response = table.delete_item(
+            Key={'user_id': user_id},
+            ReturnValues='ALL_OLD'
+        )
+        if 'Attributes' in response:
             logger.info("User deleted successfully: %s", user_id)
             return {"message": "User deleted successfully"}
         else:
